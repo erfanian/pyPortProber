@@ -62,7 +62,7 @@ class handshake():
 		self.received_port_list = []
 		self.local_port_list = ports
 		self.local_socket_exceptions = []
-		self.remove_socket_exceptions = []
+		self.remote_socket_exceptions = []
 		self.socket_success = []
 
 	def server_shake(self, payload):
@@ -74,9 +74,11 @@ class handshake():
 				s.settimeout(120)
 				conn, addr = s.accept()
 				while 1:
-				    data = conn.recv(1024)
-				    conn.sendall(str(payload))
-				    break
+					print "Receiving data..."
+					data = conn.recv(1024)
+					print "sending data..."
+					conn.sendall(str(payload))
+					break
 				conn.close()
 				return list(data)
 			else:
@@ -97,7 +99,9 @@ class handshake():
 				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				s.connect((args.host, self.target_port))
 				s.settimeout(120)
+				print "Sending data..."
 				s.sendall(str(payload))
+				print "Receiving data..."
 				data = s.recv(1024)
 				s.close()
 				return list(data)
@@ -118,6 +122,7 @@ class handshake():
 
 if args.server is True:
 
+	print "Shaking hands..."
 	server_welcome = handshake(PORTS)
 	server_welcome.received_port_list = server_welcome.server_shake(server_welcome.local_port_list)
 
@@ -139,6 +144,7 @@ if args.server is True:
 	while active_count() > 1:
 		pass
 	
+	print "Saying goodbye..."
 	server_welcome.remote_socket_exceptions = server_welcome.server_shake(server_welcome.local_socket_exceptions)
 
 	print "These ports were not shared by the client and server: " + str(server_welcome.port_diff(server_welcome.local_port_list, server_welcome.received_port_list))
@@ -149,6 +155,7 @@ if args.server is True:
 
 elif args.client is True:
 
+	print "Shaking hands..."
 	client_welcome = handshake(PORTS)
 	client_welcome.received_port_list = client_welcome.client_shake(client_welcome.local_port_list)
 
@@ -174,8 +181,7 @@ elif args.client is True:
 			s = None
 			client_welcome.local_socket_exceptions.append(PORT)
 	
-	sleep(.05)
-	
+	print "Saying goodbye..."
 	client_welcome.remote_socket_exceptions = client_welcome.client_shake(client_welcome.local_socket_exceptions)
 		
 	print "These ports were not shared by the client and server: " + str(client_welcome.port_diff(client_welcome.local_port_list, client_welcome.received_port_list))
